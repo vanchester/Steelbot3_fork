@@ -148,7 +148,7 @@ class Proto extends SBotProtocol  {
 			$this->_icq->sendMessage($to, $txt);
 			if (mb_strlen($txt) <= self::MAX_MESSAGE_LENGTH) {
 				$txt = mb_convert_encoding($txt, 'UNICODE', 'utf-8');
-				$this->proto->msg($txt, $to);
+				$this->_icq->sendMessage($to, $txt);
 			} else {
 				$length = 0;
 				$i = 0;
@@ -162,7 +162,7 @@ class Proto extends SBotProtocol  {
 						}
 					}
 					$submsg = trim($submsg);
-					$this->proto->msg($submsg, $to);
+					$this->_icq->sendMessage($to, $submsg);
 					$msg = mb_substr($msg, strlen($submsg)+1);
 					sleep(1);
 				}
