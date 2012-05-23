@@ -84,28 +84,46 @@ function actionCreate() {
     
     echo $protocols[$protocol]." has been chosen\n";
 
-    if ($protocol == 1) {
-        $installer->config['proto']['engine'] = 'icq';
-        $installer->config['proto']['uin'] = inputText("Enter bot UIN", '');
-        $installer->config['proto']['password'] = inputText("Enter UIN password", '');
+	switch($protocol) {
+		case 1:
+			$installer->config['proto']['engine'] = 'icq';
+			$installer->config['proto']['uin'] = inputText("Enter bot UIN", '');
+			$installer->config['proto']['password'] = inputText("Enter UIN password", '');
 
-        $account = inputText("Enter bot administrator UIN", '');
-        $installer->config['proto']['master_accounts'] = array($account);
-    } elseif ($protocol == 2) {
-        $installer->config['proto']['engine'] = 'jabber';
-        $installer->config['proto']['jid'] = inputText("Enter bot JID", '');
-        $installer->config['proto']['password'] = inputText("Enter JID password", '');
+			$account = inputText("Enter bot administrator UIN", '');
+			$installer->config['proto']['master_accounts'] = array($account);
+			break;
+		case 2:
+			$installer->config['proto']['engine'] = 'jabber';
+			$installer->config['proto']['jid'] = inputText("Enter bot JID", '');
+			$installer->config['proto']['password'] = inputText("Enter JID password", '');
 
-        $account = inputText("Enter bot administrator JID", '');
-        $installer->config['proto']['master_accounts'] = array($account);
-    }
-
-
+			$account = inputText("Enter bot administrator JID", '');
+			$installer->config['proto']['master_accounts'] = array($account);
+			break;
+		case 3:
+			$installer->config['proto']['engine'] = 'irc';
+			$installer->config['proto']['uin'] = inputText("Enter bot login", '');
+			$installer->config['proto']['password'] = inputText("Enter password", '');
+			$installer->config['proto']['host'] = inputText("Enter server address", '');
+			$installer->config['proto']['port'] = inputText("Enter server port", '');
+			
+			$channel = inputText("Enter bot channel", '');
+			$installer->config['proto']['channel'] = array($channel);
+			
+			$account = inputText("Enter bot administrator logins", '');
+			$installer->config['proto']['master_accounts'] = array($account);
+			break;
+		default:
+			die();
+	}
+	
     echo "MySQL settings\n";
     // mysql settings
     $installer->config['db']['host'] = inputText("Enter MySQL host", 'localhost');
     $installer->config['db']['user'] = inputText("Enter MySQL user", 'root');
     $installer->config['db']['database'] = inputText("Enter MySQL database", 'steelbot');
+    $installer->config['db']['table_prefix'] = inputText("Enter MySQL table prefix", 'steelbot_');
     $installer->config['db']['password'] = inputText("Enter MySQL password", '');
     
     

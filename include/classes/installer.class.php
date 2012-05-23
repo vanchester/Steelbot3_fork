@@ -3,27 +3,23 @@
 class Installer  {
 
     public $config = array(
-            'db' => array(
-                'engine' => 'mysqldb'
-             ),
-            
-            'plugins' => array(
-                'inet-tools' => array(),
-                'help' => array()
-                )
-            ),
-           $steelbotPath = null,
-           $destinationPath = null,
-           $appTemplatePath = null,
-           $protocol = null;
-    
-    protected $_protocols = array(
-            1 => 'ICQ',
-            2 => 'XMPP (Jabber)'
-    ),
+		'db' => array(
+			'engine' => 'mysqldb'
+		 ),
+	),
+	$steelbotPath = null,
+	$destinationPath = null,
+	$appTemplatePath = null,
+	$protocol = null;
 
-            $_protocol,
-            $_destinationPath;
+	protected $_protocols = array(
+		1 => 'ICQ',
+		2 => 'XMPP (Jabber)',
+		3 => 'IRC',	
+	),
+
+	$_protocol,
+	$_destinationPath;
     
 
     public function Deploy() {
@@ -49,8 +45,7 @@ class Installer  {
         );
 
         $files = glob($appTemplatePath.DIRECTORY_SEPARATOR.'*');
-        foreach ($files as $file)
-        {
+        foreach ($files as $file) {
             $this->copyFile($file, $destinationPath.DIRECTORY_SEPARATOR.basename($file));
         }
 
@@ -100,7 +95,6 @@ class Installer  {
         $steelbotPath = $this->steelbotPath;
         $content = preg_replace('/define\(\'STEELBOT_DIR.*/',
             "define('STEELBOT_DIR', '$steelbotPath');",$content);
-
         $config = $this->config;
 
         switch ($this->protocol) {
@@ -120,11 +114,24 @@ class Installer  {
                     'master_accounts' => array('admin@accounts.here', 'other@admin.account')
                 );
                 break;
+			case 3:
+				$config['proto'] = array(
+                    'engine' => 'irc',
+                    'uin' => 'your_nickname',
+                    'password' => 'your password here',
+                    'host' => 'your server address here',
+                    'port' => 'your server port here',
+                    'channel' => array('channel_name'),
+                    'master_accounts' => array('admin@accounts.here', 'other@admin.account')
+                );
+                break;
         }
 
-        $export = var_export($config, true);
-        $content = preg_replace('/\$config.*/',
-            "\$config = $export;",$content);
+		$content = preg_replace('/define\(\'PROTOCOL.*/',
+            "define('PROTOCOL', '{$config['proto']['engine']}');",$content);
+		$export = var_export($config, true);
+        $content = preg_replace('/\$config[\s\t]*=[\s\t]*array_merge\(.*/',
+            "\$config = array_merge(\$config, $export);",$content);
             
         file_put_contents($filename, $content);
         

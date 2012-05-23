@@ -6,4 +6,4 @@ return array(
 	'db' => array(
 		'engine' => 'mysqldb'
 	)
-);          
+);

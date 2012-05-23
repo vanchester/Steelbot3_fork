@@ -85,22 +85,18 @@ class SteelBotDB extends SDatabase  {
         $this->mysql->Connect();
 		
         if ( $this->selectDB($this->dbname)) {
-            $this->InstallTable(dirname(__FILE__).'/steelbot_users.sql');
-			$this->UpdateTable('users');
+			$files = glob(dirname(__FILE__).'/*.sql');
+			
+			foreach($files as $file) {
+				$this->InstallTable($file);
+				$filename = basename($file);
+				$this->UpdateTable(substr($filename, 0, strrpos($filename, '.')));
+			}
 
-            $this->InstallTable(dirname(__FILE__).'/steelbot_commands.sql');
-            $this->UpdateTable('commands');
-
-            $this->InstallTable(dirname(__FILE__).'/steelbot_options.sql');
-            $this->UpdateTable('options');
-
-            $this->InstallTable(dirname(__FILE__).'/steelbot_aliases.sql');
-            $this->UpdateTable('aliases');
-
-	    if ($this->_wait_timeout)
-	    {
-		    $this->query("SET wait_timeout=".(string)(int)$this->_wait_timeout);
-	    }
+			if ($this->_wait_timeout)
+			{
+				$this->query("SET wait_timeout=".(string)(int)$this->_wait_timeout);
+			}
             if (class_exists('Event')) {
                 S::bot()->eventManager->EventRun(new Event(EVENT_DB_CONNECTED, array('dbname'=>$this->dbname)));
             } else {
