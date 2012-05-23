@@ -88,7 +88,7 @@ class SteelBotHelp {
 }
 
 function plg_SendMsgToAdm($message) {
-    $admins = S::bot()->getAdmins();
+    $admins = S::bot()->config['proto']['master_accounts'];
     
     if (empty($admins)) {
         S::bot()->Msg("Admins not setted");
