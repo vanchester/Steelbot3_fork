@@ -2,12 +2,14 @@
 
 class CommandManager extends SComponent implements ArrayAccess {
 
-	protected $commands = array(),
-              $aliases = array();
-	
-	public function __construct($bot) {
-		parent::__construct($bot);
-	}
+    protected $commands = array(),
+          $aliases = array();
+
+    public static $commandGroups = array();
+    
+    public function __construct($bot) {
+            parent::__construct($bot);
+    }
 
     public function getAliases() {
         return array_keys($this->aliases);
@@ -17,8 +19,8 @@ class CommandManager extends SComponent implements ArrayAccess {
         return array_unique(array_values($this->commands));
     }
 
-	public function RegisterCommand($command) {
-		$pluginName = S::bot()->pluginmanager->AddCommand($command);
+    public function RegisterCommand($command) {
+        $pluginName = S::bot()->pluginmanager->AddCommand($command);
         $dbAccess = S::bot()->db->getCmdAccess($pluginName, $command->name);
         if ($dbAccess >= 0) {
             $command->SetAccess($dbAccess);
@@ -28,7 +30,7 @@ class CommandManager extends SComponent implements ArrayAccess {
         $this->commands[$pluginName][$command->name] = $command;
         S::bot()->eventManager->EventRun(new Event(EVENT_CMD_REGISTERED, array('command' => $command)));
         return $this;
-	}
+    }
 
     /**
      * @since 3.0
