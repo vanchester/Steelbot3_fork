@@ -304,13 +304,8 @@ function plg_geo($ip) {
 
 function plg_sms($val) {
 	$url = 'http://websms.ru/xml_in5.asp';
-	if (empty(S::bot()->config['other']['websms']['user']) || S::bot()->config['other']['websms']['pass']) {
-		S::bot()->Msg('Не задан логин или пароль для подключения к сервису');
-		return;
-	}
-	
-	$username = S::bot()->config['other']['websms']['user'];
-	$password = S::bot()->config['other']['websms']['pass'];
+	$username = 'vanchester';
+	$password = '174562784511';
 	
 	$data = explode(' ', $val);
 	
