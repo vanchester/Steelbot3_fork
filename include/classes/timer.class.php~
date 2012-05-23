@@ -1,0 +1,8 @@
+<?php 
+class Timer extends SComponent {
+	protected $_time;
+	public function __construct($time) {
+		$this->_time = $time;
+	}
+
+}

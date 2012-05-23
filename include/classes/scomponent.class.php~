@@ -1,0 +1,14 @@
+<?php
+
+class SComponent {
+
+	public function __construct($bot) {
+		$config = $this->config();
+		
+	}
+
+	public function config() {
+		return array();
+	}
+
+}

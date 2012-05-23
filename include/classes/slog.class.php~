@@ -1,0 +1,93 @@
+<?php
+
+/**
+ * Логирование сообщений для SteelBot
+ * 
+ * @author N3x^0r
+ * @version 1.0
+ * 
+ * 2008-08-11
+ *
+ */
+
+class slog implements ISteelBotLog {
+    
+   static $logger = null,
+          $buffer_size = 30;
+
+   static function init() {
+      $loggerName = SteelBot::$cfg['log.class'];
+      if (!class_exists($loggerName)) {
+		throw new BotException("Class logger '$loggerName' not exists", 0);
+	  }
+      self::$logger = new $loggerName();
+
+      set_error_handler(array(__CLASS__, 'errorHandler'));
+   }
+
+   static function errorHandler($error_level, $error_message, $error_file, $error_line) {
+		static $levels = array(
+			E_USER_ERROR => array('E_USER_ERROR',LOG_LEVEL_ERROR),
+			E_ERROR => array('E_ERROR',LOG_LEVEL_ERROR),
+			E_USER_WARNING => array('E_USER_WARNING', LOG_LEVEL_WARNING),
+			E_WARNING => array('E_WARNING', LOG_LEVEL_WARNING),
+			E_USER_NOTICE => array('E_USER_NOTICE', LOG_LEVEL_NOTICE),
+			E_NOTICE => array('E_NOTICE', LOG_LEVEL_NOTICE)
+		);
+
+		if (isset($levels[$error_level])) {
+			self::a('PHP', "{$levels[$error_level][0]} in $error_file, line $error_line: $error_message",
+					$levels[$error_level][1]
+			);
+		} else {
+			self::a('PHP', "unknown error($error_level) in $error_file, line $error_line: $error_message",
+					LOG_LEVEL_ERROR
+			);
+		}
+   }	
+   
+   /**
+    *
+    * @param string $name
+    * @param string $msg
+    * @param string $code
+    * @param string $sender
+    * @return bool
+    */
+   static function add($name, $msg, $code = '000', $sender = false, $level = LOG_LEVEL_NOTICE) {
+	    return self::$logger->add($name, $msg, $code, $sender, $level);
+   }
+
+   static function a($name, $msg, $level = LOG_LEVEL_NOTICE) {
+		return self::add($name, $msg, '000', false, $level);
+   }
+
+   static function getLogger() {
+		return self::$logger;
+   }	
+   /**
+    *
+    * @param srting $date
+    * @param string $name
+    * @param string $msg
+    * @param string $code
+    * @param string $sender
+    */
+   static function format($date, $name, $msg, $code, $sender) {
+       return self::$logger->format($date, $name, $msg, $code, $sender);
+   }
+
+   /**
+    *
+    * @param string $res
+    */
+   static function result($res) {       
+       return self::$logger->result($res);
+   }
+   
+   static function save($prefix = '_') {
+	   return self::$logger->save($prefix);
+   }
+    
+}
+

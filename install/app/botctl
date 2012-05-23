@@ -1,0 +1,55 @@
+#!/bin/sh
+
+PHP_PATH="/usr/bin/php"
+BOT_HOME=$(cd $(dirname $0); pwd -P)
+PID_FILE="$BOT_HOME/tmp/bot.pid"
+RUN_SCRIPT="$BOT_HOME/run.php"
+
+bot_start() {
+    if [ -f $PID_FILE ]; then
+        PID_VALUE=`cat $PID_FILE`
+        if [ ! -z "$PID_VALUE" ]; then
+            COUNT=`ps $PID_VALUE | wc -l`
+            if [ "$COUNT" -eq 2 ]; then
+                echo "Bot is already running (pid=$PID_VALUE)"
+                exit 1;
+            fi
+        fi
+    fi
+
+
+    cd $BOT_HOME
+    CURDATE=$(date +%F)
+    exec nohup $PHP_PATH $RUN_SCRIPT >>$BOT_HOME/logs/$CURDATE.log 2>&1 &
+    echo $! > $PID_FILE
+}
+
+bot_stop() {
+    if [ -f $PID_FILE ]; then
+        PID_VALUE=`cat $PID_FILE`
+        if [ ! -z "$PID_VALUE" ]; then
+            CHECK=`ps $PID_VALUE | wc -l`
+            if [ `ps $PID_VALUE | wc -l` -eq 2 ]; then
+                kill -9 $PID_VALUE
+            fi
+        fi
+        rm $PID_FILE
+    fi
+}
+
+case "$1" in
+    start)
+        bot_start
+    ;;
+    stop)
+        bot_stop
+    ;;
+    restart)
+        bot_stop
+        bot_start
+    ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}" >&2
+        exit 1
+    ;;
+esac
