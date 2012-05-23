@@ -102,47 +102,51 @@ class MySQL  {
 	 * @param array $data
 	 */
 	public function EscapedQuery($query, $data) {
-        if (!is_null($data)) {    
-            $keys = array_keys($data);
-            $values = array_values($data);
-            
-            foreach ($keys as &$k) {
-                $k = '{'.$k.'}';
-            }
-            foreach ($values as &$v) {
-                $v = "'".mysql_real_escape_string($v, $this->dbhandle)."'";
-            }
+            if (!is_null($data)) {    
+                $keys = array_keys($data);
+                $values = array_values($data);
 
-            $query = str_replace($keys, $values, $query);
-        }
-		return $this->query( $query );
+                foreach ($keys as &$k) {
+                    $k = '{'.$k.'}';
+                }
+                foreach ($values as &$v) {
+                    $v = "'".mysql_real_escape_string($v, $this->dbhandle)."'";
+                }
+
+                $query = str_replace($keys, $values, $query);
+            }
+            return $this->query( $query );
 	}
 
 	public function FormatQuery($query, $data) {
-		if (!is_null($data)) {
-			$keys = array_keys($data);
-			$values = array_values($data);
-			
-			foreach ($keys as &$k) {
-				$k = '{'.$k.'}';
-			}
-			foreach ($values as &$v) {
-				$v = "'".mysql_real_escape_string($v, $this->dbhandle)."'";
-			}
-            return str_replace( $keys, $values, $query);
-		}
-		return $query;
+            if (!is_null($data)) {
+                $keys = array_keys($data);
+                $values = array_values($data);
+
+                foreach ($keys as &$k) {
+                        $k = '{'.$k.'}';
+                }
+                foreach ($values as &$v) {
+                    $v = "'".mysql_real_escape_string($v, $this->dbhandle)."'";
+                }
+                return str_replace( $keys, $values, $query);
+            }
+            return $query;
 	}
 	
+        public function FetchArray($r) {
+		return mysql_fetch_array($r);
+	}
+        
 	/**
-	 * Извлечь строку из mysql результата в виде ассоциативного массива
+	 * �?звлечь строку из mysql результата в виде ассоциативного массива
 	 */
 	public function FetchAssoc($r) {
 		return mysql_fetch_assoc($r);
 	}
 	
 	/**
-	 * Извлечь строку из mysql результата в виде неассоциативного массива
+	 * �?звлечь строку из mysql результата в виде неассоциативного массива
 	 */
 	public function FetchRow($r) {
 		return mysql_fetch_row($r);
@@ -195,5 +199,9 @@ class MySQL  {
 
     public function RowsAffected() {
         return mysql_affected_rows($this->dbhandle);
+    }
+    
+    public function LastInsertId() {
+        return mysql_insert_id($this->dbhandle);
     }
 }
