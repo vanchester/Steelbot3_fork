@@ -161,7 +161,8 @@ class Proto extends SBotProtocol  {
 						}
 					}
 					$submsg = trim($submsg);
-					$this->_icq->sendMessage($to, $submsg);
+					$submsgUnicode = mb_convert_encoding($submsg, 'UNICODE', 'utf-8');
+					$this->_icq->sendMessage($to, $submsgUnicode);
 					$msg = mb_substr($msg, strlen($submsg)+1);
 					sleep(1);
 				}
