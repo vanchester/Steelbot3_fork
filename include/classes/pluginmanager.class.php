@@ -5,6 +5,7 @@ class PluginManager extends SComponent implements ArrayAccess {
               $_current_plugin,
               $plugins;
 	
+        private $_pluginLabel;
 	
 	public function __construct($bot) {
 		parent::__construct($bot);
@@ -89,14 +90,21 @@ class PluginManager extends SComponent implements ArrayAccess {
         if ($this->PluginLoaded($name)) {
             throw new BotException(("Plugin $name already loaded"));
         } else {
+            if (!empty($params['label'])) {
+                $this->_pluginLabel = $params['label'];
+            } else {
+                $this->_pluginLabel = null;
+            }
+            
             $plug = new Plugin($filename);
             $this->_current_plugin = $plug;
-            $plug->Load();        
+            $plug->Load();
             $this->instances[$name] = $plug;
             S::logger()->log("'$name' load OK");
             S::bot()->eventManager->EventRun(
                 new Event(EVENT_PLUGIN_LOADED, array('name'=>$name))
-            );                   
+            );
+            
             $this->_current_plugin = null;
             return true;        
         }
@@ -111,6 +119,9 @@ class PluginManager extends SComponent implements ArrayAccess {
         $plugin = $this->pluginInstance;
         if ($plugin != null) {
             $plugin->AddCommand($command);
+            if (!empty($this->_pluginLabel)) {
+                CommandManager::$commandGroups[$command->getName()] = $this->_pluginLabel;
+            }
             return $plugin->name;
         } else {
             return null;
