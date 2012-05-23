@@ -86,3 +86,21 @@ class SteelBotHelp {
         S::bot()->Msg("Команда $alias не найдена. Для получения помощи отправьте ".SteelBotHelp::$helpAlias);
     }
 }
+
+function plg_SendMsgToAdm($message) {
+    $admins = S::bot()->getAdmins();
+    
+    if (empty($admins)) {
+        S::bot()->Msg("Admins not setted");
+        return;
+    }
+    
+    foreach($admins as $ID) {
+        echo $ID."\n";
+        S::bot()->Msg("Message from UID ".S::bot()->msgEvent->sender.":\n{$message}", $ID);
+        sleep(1);
+    }
+}
+
+S::bot()->RegisterCmd("send2adm", "plg_SendMsgToAdm", 1, "{alias} <message> - отправить сообщение Администрации");
+
