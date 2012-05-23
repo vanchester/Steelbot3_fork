@@ -10,7 +10,8 @@ function plg_weather($val) {
 	}
 
 	require_once(dirname(__FILE__)."/weather.class.php");
-
+	include_once(STEELBOT_DIR.'/extensions/simple_html_dom.php');
+	
 	$rates = new weather();
 
 	$data = $rates->searchCity($val);

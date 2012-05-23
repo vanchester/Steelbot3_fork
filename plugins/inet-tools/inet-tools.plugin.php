@@ -303,6 +303,8 @@ function plg_geo($ip) {
 }
 
 function plg_sms($val) {
+	include_once(STEELBOT_DIR.'/extensions/simple_html_dom.php');
+	
 	$url = 'http://websms.ru/xml_in5.asp';
 	$username = S::bot()->config['other']['websms']['user'];
 	$password = S::bot()->config['other']['websms']['pass'];

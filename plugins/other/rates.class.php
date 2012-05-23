@@ -5,6 +5,8 @@
 	
 		public function getCourse($valute) 
 		{
+			include_once(STEELBOT_DIR.'/extensions/simple_html_dom.php');
+			
 			$valute = strtolower(trim($valute));
 			
 			$url = $this->url;
