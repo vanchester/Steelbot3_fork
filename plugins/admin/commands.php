@@ -546,6 +546,29 @@ class InfoAdminCommand extends AdminCommand {
     SteelBot::Msg($msg);
 }} */
 
+class UpdateAdminCommand extends AdminCommand {
+    public $helpFull = "{alias} - обновить файлы бота",
+			$helpShort = "{alias} - обновить файлы бота";
+    protected $_name = 'update';
+
+    public function Execute($params, &$msgevent) {
+        if (empty(S::bot()->config['other']['update']['command'])) {
+			S::bot()->Msg("Команда обновления не задана в настройках");
+			return;
+		}
+		
+		S::bot()->Msg("Обновление из ".S::bot()->config['other']['update']['repository']);
+		$command = sprintf(S::bot()->config['other']['update']['command'], STEELBOT_DIR, STEELBOT_DIR, S::bot()->config['other']['update']['repository']);
+		
+		echo $command."\n";
+		exec($command, $res);
+		
+		$msg = implode("\n", $res);
+	
+		S::bot()->Msg($msg);
+    }
+}
+
 return array(
     'HelpAdminCommand',
     'CmdAdminCommand',
@@ -557,6 +580,7 @@ return array(
     'ReconnectAdminCommand',    
     '',   
     'TimerAdminCommand',
-    'InfoAdminCommand'*/
-    'DebugAdminCommand'
+    'InfoAdminCommand',*/
+    'DebugAdminCommand',
+    'UpdateAdminCommand',
 );
