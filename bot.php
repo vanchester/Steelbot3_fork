@@ -10,7 +10,7 @@
  * 
  */
 
-define('STEELBOT_VERSION', '3.0.0');
+define('STEELBOT_VERSION', '3.0.0.fork.1.0');
 if (!defined('STEELBOT_DIR'))
 	define('STEELBOT_DIR', dirname(__FILE__)); 
 error_reporting(E_ALL);
