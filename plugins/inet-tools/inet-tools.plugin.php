@@ -304,8 +304,8 @@ function plg_geo($ip) {
 
 function plg_sms($val) {
 	$url = 'http://websms.ru/xml_in5.asp';
-	$username = 'vanchester';
-	$password = '174562784511';
+	$username = S::bot()->config['other']['websms']['user'];
+	$password = S::bot()->config['other']['websms']['pass'];
 	
 	$data = explode(' ', $val);
 	
@@ -370,7 +370,7 @@ function plg_sms($val) {
 	
 	$db = S::bot()->db;
 	
-	$query = "SELECT MAX(id) FROM sms";
+	$query = "SELECT MAX(id) FROM ".S::bot()->config['db']['table_prefix']."sms";
 		
 	$messageId = (int)$db->QueryValue($query) + 1;
 	
@@ -391,6 +391,18 @@ BODY;
 	curl_setopt($ch, CURLOPT_URL, $url);
 	$result = trim(curl_exec($ch));
 	curl_close($ch);
+	
+	$db->EscapedQuery("INSERT 
+					INTO ".S::bot()->config['db']['table_prefix']."sms
+					(`uin`, `recipient`, `message`, `answer`)
+				VALUES
+					({uin}, {recipient}, {message}, 'answer')",
+				array(
+					'uin' => S::bot()->msgEvent->sender,
+					'recipient' => $recipientNum,
+					'message' => $message,
+					'answer' => $answer,
+				));
 	
 	if (empty($result)) {
 		S::bot()->Msg('Произошла ошибка. Повторите попытку позже');
