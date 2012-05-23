@@ -396,7 +396,7 @@ BODY;
 					INTO ".S::bot()->config['db']['table_prefix']."sms
 					(`uin`, `recipient`, `message`, `answer`)
 				VALUES
-					({uin}, {recipient}, {message}, 'answer')",
+					({uin}, {recipient}, {message}, '{answer}')",
 				array(
 					'uin' => S::bot()->msgEvent->sender,
 					'recipient' => $recipientNum,
