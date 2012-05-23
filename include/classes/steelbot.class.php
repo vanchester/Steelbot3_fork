@@ -28,7 +28,8 @@ class SteelBot extends SComponent {
             $_commandmanager = null,
             $_sessionmanager = null;
 
-			   
+	public static $aliases = array();
+	
     const OPTBOT = 1;
     const OPTPLUGIN = 2;
     const OPTPROTOCOL = 3;
@@ -175,6 +176,10 @@ class SteelBot extends SComponent {
 
         if ($create_alias) {
             $this->commandManager->createAlias($command, $command->name);
+            self::$aliases[count(self::$aliases)+1] = $command->name;
+            
+            $command = $this->commandManager->BuildCommand(count(self::$aliases), $func, $access, $helpstr);
+            $this->commandmanager->RegisterCommand($command);
         }
         return $command;
     }
@@ -364,8 +369,17 @@ function DbIgnoredOption($option) {
     
         if ($command instanceof BotCommand) {
             try {
-                $command->execute($params, $event);
-                			
+                $command->execute($params, $event);			
+                $this->db->EscapedQuery(
+                    "INSERT INTO commands_history (`uin`, `command`, `date`, `status`)
+                     VALUES ({uin}, {command}, {date}, {status})",
+                     array(
+                         'uin' => $this->msgEvent->sender,
+                         'command' => $event->content,
+                         'date' => date('Y-m-d H:i:s'),
+                         'status' => 1,
+                     )
+                );
             } catch (BotException $e) {
                 S::logger()->log( $e->getMessage() );
                 switch ($e->getCode()) {
@@ -381,12 +395,52 @@ function DbIgnoredOption($option) {
                 }
             }
         } else {
-            $this->eventManager->EventRun(new Event(EVENT_MSG_UNHANDLED, array(
-                'alias' => $alias,
-                'params' => $params,
-                'event' => $event
-            )));
-        }    
+            $command = $this->commandManager->getCommandByAlias(self::$aliases[$alias]);
+            if ($command instanceof BotCommand) {
+                try {
+                    $command->execute($params, $event);		
+                    $this->db->EscapedQuery(
+                    "INSERT INTO commands_history (`uin`, `command`, `date`, `status`)
+                     VALUES ({uin}, {command}, {date}, {status})",
+                     array(
+                         'uin' => $this->msgEvent->sender,
+                         'command' => $event->content,
+                         'date' => date('Y-m-d H:i:s'),
+                         'status' => 1,
+                     )
+                );
+                } catch (BotException $e) {
+                    S::logger()->log( $e->getMessage() );
+                    switch ($e->getCode()) {
+                        case ERR_CMD_ACCESS:
+                            S::logger()->log("ERR_CMD_ACCESS");
+                            self::Msg( $e->getMessage() );
+                            break;
+
+                        case ERR_FUNC:
+                            S::logger()->log("ERR_FUNC");
+                            //self::Msg( LNG(LNG_ERRFUNC));
+                            break;
+                    }
+                }
+            } else {
+                $this->db->EscapedQuery(
+                    "INSERT INTO commands_history (`uin`, `command`, `date`, `status`)
+                     VALUES ({uin}, {command}, {date}, {status})",
+                     array(
+                         'uin' => $this->msgEvent->sender,
+                         'command' => $event->content,
+                         'date' => date('Y-m-d H:i:s'),
+                         'status' => 0,
+                     )
+                );
+                $this->eventManager->EventRun(new Event(EVENT_MSG_UNHANDLED, array(
+                    'alias' => $alias,
+                    'params' => $params,
+                    'event' => $event
+                )));
+            }
+        }
         return true;    
     }
 
