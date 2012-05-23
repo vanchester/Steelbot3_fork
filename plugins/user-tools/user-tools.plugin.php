@@ -4,7 +4,8 @@
  * user-tools - плагин для SteelBot
 */
 
-S::bot()->RegisterCmd("timer", "plg_timer", 1,"{alias} <period> <message> - добавить таймер (пример period: 1d7h4m10s). Команда без параметров выведет все ваши таймеры");
+S::bot()->eventManager->RegisterEventHandler(EVENT_CONNECTED, array('plg_timer', 'loadSavedAlarms'));
+S::bot()->RegisterCmd("timer", array("plg_timer", "analize"), 1,"{alias} <period> <message> - добавить таймер (пример period: 1d7h4m10s). Команда без параметров выведет все ваши таймеры");
 S::bot()->RegisterCmd("alarm", "plg_alarm", 1,"{alias} <time> [days] <message> - добавить будильник (пример time: 7:05, пример days: 1235 (пн,вт,ср,пт)). Команда без параметров выведет все ваши будильники");
 S::bot()->RegisterCmd("memo", array("Memo", "analize"), 1,"{alias} [add|del|list] <name> [text] - управление личными заметками");
 S::bot()->RegisterCmd("hist", "plg_hist", 1,"{alias} [num] - история введенных команд. если указан num, команда под номером num будет повторена");
@@ -248,39 +249,65 @@ function plg_hist($val) {
 	S::bot()->eventManager->EventRun($event);
 }
 
-function plg_timer($val) {
-	$val = preg_replace('/[\s]{2,}/', ' ', trim($val));
-	
-	if (empty($val)) {
-		$db = S::bot()->db;
-		
-		$query = $db->FormatQuery("SELECT * FROM ".S::bot()->config['db']['table_prefix']."alarms WHERE type= 'timer' AND `time` > {time} AND `uin` = {uin} ORDER BY time", array(
-			'time' => time(),
-			'uin' => S::bot()->msgEvent->sender,
-		));
-		
-		$result = $db->Query($query);
-	
-		$i = 0;
-		$timers = array();
-		while ($row = $db->FetchArray($result)) {
-			$i++;
-			$params = (array)current((array)json_decode($row['params']));
-			$timers[] = "  {$i}: [".date('Y-m-d H:i:s', $row['time'])."] {$params['message']}";
-		}
-		
-		if (empty($timers)) {
-			S::bot()->Msg("У вас нет активных таймеров");
-			return;
-		}
-		
-		$msg = "Ваши активные таймеры:\n".implode("\n", $timers);
-		S::bot()->Msg(trim($msg));
-		
-		return;
-	}
-	
-	$data = explode(' ', trim($val));
+class plg_timer
+{
+    public static function analize($val) {
+        $val = preg_replace('/[\s]{2,}/', ' ', trim($val));
+        
+        if (empty($val)) {
+            self::_showTimers();
+            return;
+        }
+        
+        self::_addTimer($val);
+    }
+    
+    public static function loadSavedAlarms() {
+        $db = S::bot()->db;
+        
+        $db->Query("DELETE FROM ".S::bot()->config['db']['table_prefix']."alarms WHERE time < ".time());
+
+        $result = $db->Query("SELECT * FROM ".S::bot()->config['db']['table_prefix']."alarms");
+
+        while ($row = $db->FetchArray($result)) {
+            $timerId = S::bot()->timermanager->timerAdd($row['time'], $row['function'], (array)  json_decode($row['params']), true);
+            $db->Query("UPDATE ".S::bot()->config['db']['table_prefix']."alarms SET timer_id = {$timerId} WHERE id = {$row['id']}");
+        }
+    }
+        
+    private static function _showTimers() {
+        $db = S::bot()->db;
+        
+        $query = $db->FormatQuery("SELECT * FROM ".S::bot()->config['db']['table_prefix']."alarms WHERE type= 'timer' AND `time` > {time} AND `uin` = {uin} ORDER BY time", array(
+                'time' => time(),
+                'uin' => S::bot()->msgEvent->sender,
+        ));
+
+        $result = $db->Query($query);
+
+        $i = 0;
+        $timers = array();
+        while ($row = $db->FetchArray($result)) {
+                $i++;
+                $params = (array)current((array)json_decode($row['params']));
+                $timers[] = "  {$i}: [".date('Y-m-d H:i:s', $row['time'])."] {$params['message']}";
+        }
+
+        if (empty($timers)) {
+                S::bot()->Msg("У вас нет активных таймеров");
+                return;
+        }
+
+        $msg = "Ваши активные таймеры:\n".implode("\n", $timers);
+        S::bot()->Msg(trim($msg));
+
+        return;
+    }
+    
+    private static function _addTimer($val) {
+        $db = S::bot()->db;
+        
+        $data = explode(' ', trim($val));
 	if (count($data) < 2 || !preg_match('/^((?:[\d]+[dDдД])*(?:[\d]+[hHчЧ])*(?:[\d]+[mMмМ])*(?:[\d]+[sSсС])*)$/', $data[0], $out)) {
 		S::bot()->Msg("Неверные параметры команды");
 		return;
@@ -304,7 +331,6 @@ function plg_timer($val) {
 	
 	$timerId = S::bot()->timermanager->timerAdd($time, 'timerMessage', $params, true);
 	
-	$db = S::bot()->db;
 	$query = $db->EscapedQuery(
 		"INSERT INTO ".S::bot()->config['db']['table_prefix']."alarms
 		(`timer_id`, `time`, `type`, `function`, `uin`, `params`)
@@ -320,6 +346,7 @@ function plg_timer($val) {
 	);
 	
 	S::bot()->Msg("Таймер успешно установлен на ".date('Y-m-d H:i:s', $time));
+    }
 }
 
 function plg_alarm($val) {

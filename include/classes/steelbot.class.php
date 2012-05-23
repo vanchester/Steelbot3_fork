@@ -122,21 +122,8 @@ class SteelBot extends SComponent {
             }  else {
                 throw new BotException("Unknown plugin: $pluginName", 0);
             }      
-        }        
-        $this->loadSavedAlarms();
+        }
     }
-
-	private function loadSavedAlarms() {
-		$db = S::bot()->db;
-		$db->Query("DELETE FROM ".S::bot()->config['db']['table_prefix']."alarms WHERE time < ".time());
-
-		$result = $db->Query("SELECT * FROM ".S::bot()->config['db']['table_prefix']."alarms");
-
-		while ($row = $db->FetchArray($result)) {
-			$timerId = S::bot()->timermanager->timerAdd($row['time'], $row['function'], (array)  json_decode($row['params']), true);
-			$db->Query("UPDATE ".S::bot()->config['db']['table_prefix']."alarms SET timer_id = {$timerId} WHERE id = {$row['id']}");
-		}
-	}
 
     function Msg($text, $to = false) {
         if (!$to) {
