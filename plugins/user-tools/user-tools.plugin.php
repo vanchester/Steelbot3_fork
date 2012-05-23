@@ -486,7 +486,7 @@ function plg_alarm($val) {
 	
 	$db = S::bot()->db;
 	$query = $db->EscapedQuery(
-		"INSERT INTO "S::bot()->config['db']['table_prefix']."alarms
+		"INSERT INTO ".S::bot()->config['db']['table_prefix']."alarms
 		(`timer_id`, `time`, `type`, `function`, `uin`, `params`)
 		VALUES ({timer_id}, {time}, {type}, {function}, {uin}, {params})",
 		array(
