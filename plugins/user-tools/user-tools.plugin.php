@@ -63,7 +63,7 @@ class Memo {
 			"SELECT 
 				COUNT(*) 
 			FROM 
-				".self::TABLENAME."
+				".S::bot()->config['db']['table_prefix'].self::TABLENAME."
 			WHERE
 				`uin` = {uin} AND `memo_name` = {memo_name}",
 			array(
@@ -83,7 +83,7 @@ class Memo {
 			"SELECT 
 				COUNT(*) 
 			FROM 
-				".self::TABLENAME."
+				".S::bot()->config['db']['table_prefix'].self::TABLENAME."
 			WHERE
 				`uin` = {uin}",
 			array(
@@ -99,7 +99,7 @@ class Memo {
 		}
 		
 		$query = $db->EscapedQuery(
-				"INSERT INTO ".self::TABLENAME."
+				"INSERT INTO ".S::bot()->config['db']['table_prefix'].self::TABLENAME."
 				 (`uin`, `memo_name`, `date`, `text`)
 				 VALUES ({uin}, {memo_name}, {date}, {text})",
 				 array(
@@ -117,7 +117,7 @@ class Memo {
 		$db = S::bot()->db;
 		
 		$query = $db->FormatQuery(
-				"SELECT text FROM ".self::TABLENAME."
+				"SELECT text FROM ".S::bot()->config['db']['table_prefix'].self::TABLENAME."
 				 WHERE `uin` = {user} AND
 					   `memo_name` = {memo_name}",
 				 array(
@@ -148,7 +148,7 @@ class Memo {
 		$db = S::bot()->db;
 		
 		$query = $db->EscapedQuery(
-				"DELETE FROM ".self::TABLENAME."
+				"DELETE FROM ".S::bot()->config['db']['table_prefix'].self::TABLENAME."
 				 WHERE `uin` = {user} AND
 					   `memo_name` = {memo_name}",
 				 array(
@@ -172,7 +172,7 @@ class Memo {
 			"SELECT 
 				memo_name 
 			FROM 
-				".self::TABLENAME." 
+				".S::bot()->config['db']['table_prefix'].self::TABLENAME." 
 			WHERE 
 				`uin` = '".S::bot()->msgEvent->sender."'
 			ORDER BY
@@ -205,7 +205,7 @@ function plg_hist($val) {
 		"SELECT 
 			command 
 		FROM 
-			commands_history
+			".S::bot()->config['db']['table_prefix']."commands_history
 		WHERE 
 			`uin` = '".S::bot()->msgEvent->sender."' AND status = 1 AND command NOT LIKE 'hist%'
 		ORDER BY
@@ -254,7 +254,7 @@ function plg_timer($val) {
 	if (empty($val)) {
 		$db = S::bot()->db;
 		
-		$query = $db->FormatQuery("SELECT * FROM alarms WHERE type= 'timer' AND `time` > {time} AND `uin` = {uin} ORDER BY time", array(
+		$query = $db->FormatQuery("SELECT * FROM ".S::bot()->config['db']['table_prefix']."alarms WHERE type= 'timer' AND `time` > {time} AND `uin` = {uin} ORDER BY time", array(
 			'time' => time(),
 			'uin' => S::bot()->msgEvent->sender,
 		));
@@ -306,7 +306,7 @@ function plg_timer($val) {
 	
 	$db = S::bot()->db;
 	$query = $db->EscapedQuery(
-		"INSERT INTO alarms
+		"INSERT INTO ".S::bot()->config['db']['table_prefix']."alarms
 		(`timer_id`, `time`, `type`, `function`, `uin`, `params`)
 		VALUES ({timer_id}, {time}, {type}, {function}, {uin}, {params})",
 		array(
@@ -328,7 +328,7 @@ function plg_alarm($val) {
 	if (empty($val)) {
 		$db = S::bot()->db;
 		
-		$query = $db->FormatQuery("SELECT * FROM alarms WHERE type= 'alarm' AND `time` > {time} AND `uin` = {uin} ORDER BY time", array(
+		$query = $db->FormatQuery("SELECT * FROM ".S::bot()->config['db']['table_prefix']."alarms WHERE type= 'alarm' AND `time` > {time} AND `uin` = {uin} ORDER BY time", array(
 			'time' => time(),
 			'uin' => S::bot()->msgEvent->sender,
 		));
@@ -366,7 +366,7 @@ function plg_alarm($val) {
 	
 		$db = S::bot()->db;
 		
-		$query = $db->FormatQuery("SELECT * FROM alarms WHERE type= 'alarm' AND `time` > {time} AND `uin` = {uin} ORDER BY time", array(
+		$query = $db->FormatQuery("SELECT * FROM ".S::bot()->config['db']['table_prefix']."alarms WHERE type= 'alarm' AND `time` > {time} AND `uin` = {uin} ORDER BY time", array(
 			'time' => time(),
 			'uin' => S::bot()->msgEvent->sender,
 		));
@@ -397,7 +397,7 @@ function plg_alarm($val) {
 		$db = S::bot()->db;
 			
 		$query = $db->EscapedQuery(
-				"DELETE FROM alarms
+				"DELETE FROM ".S::bot()->config['db']['table_prefix']."alarms
 				WHERE `uin` = {user} AND
 					   `id` = {id}",
 				array(
@@ -486,7 +486,7 @@ function plg_alarm($val) {
 	
 	$db = S::bot()->db;
 	$query = $db->EscapedQuery(
-		"INSERT INTO alarms
+		"INSERT INTO "S::bot()->config['db']['table_prefix']."alarms
 		(`timer_id`, `time`, `type`, `function`, `uin`, `params`)
 		VALUES ({timer_id}, {time}, {type}, {function}, {uin}, {params})",
 		array(
@@ -552,7 +552,7 @@ function alarmMessage($params) {
 	
 	$db = S::bot()->db;
 	$query = $db->EscapedQuery(
-		"INSERT INTO alarms
+		"INSERT INTO ".S::bot()->config['db']['table_prefix']."alarms
 		(`timer_id`, `time`, `type`, `function`, `uin`, `params`)
 		VALUES ({timer_id}, {time}, {type}, {function}, {uin}, {params})",
 		array(
