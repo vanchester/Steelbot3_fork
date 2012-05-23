@@ -123,7 +123,20 @@ class SteelBot extends SComponent {
                 throw new BotException("Unknown plugin: $pluginName", 0);
             }      
         }        
+        $this->loadSavedAlarms();
     }
+
+	private function loadSavedAlarms() {
+		$db = S::bot()->db;
+		$db->Query("DELETE FROM ".S::bot()->config['db']['table_prefix']."alarms WHERE time < ".time());
+
+		$result = $db->Query("SELECT * FROM ".S::bot()->config['db']['table_prefix']."alarms");
+
+		while ($row = $db->FetchArray($result)) {
+			$timerId = S::bot()->timermanager->timerAdd($row['time'], $row['function'], (array)  json_decode($row['params']), true);
+			$db->Query("UPDATE ".S::bot()->config['db']['table_prefix']."alarms SET timer_id = {$timerId} WHERE id = {$row['id']}");
+		}
+	}
 
     function Msg($text, $to = false) {
         if (!$to) {
@@ -349,6 +362,8 @@ function DbIgnoredOption($option) {
      * @return bool
      */
     public function Parse($event) {
+		$commandTablename = 'commands_history';
+		
         if (strpos($event->content, ' ')) {
             list($alias, $params) = explode(' ', $event->content, 2);
         } else {
@@ -371,7 +386,7 @@ function DbIgnoredOption($option) {
             try {
                 $command->execute($params, $event);			
                 $this->db->EscapedQuery(
-                    "INSERT INTO commands_history (`uin`, `command`, `date`, `status`)
+                    "INSERT INTO ".S::bot()->config['db']['table_prefix'].$commandTablename." (`uin`, `command`, `date`, `status`)
                      VALUES ({uin}, {command}, {date}, {status})",
                      array(
                          'uin' => $this->msgEvent->sender,
@@ -400,7 +415,7 @@ function DbIgnoredOption($option) {
                 try {
                     $command->execute($params, $event);		
                     $this->db->EscapedQuery(
-                    "INSERT INTO commands_history (`uin`, `command`, `date`, `status`)
+                    "INSERT INTO ".S::bot()->config['db']['table_prefix'].$commandTablename." (`uin`, `command`, `date`, `status`)
                      VALUES ({uin}, {command}, {date}, {status})",
                      array(
                          'uin' => $this->msgEvent->sender,
@@ -425,7 +440,7 @@ function DbIgnoredOption($option) {
                 }
             } else {
                 $this->db->EscapedQuery(
-                    "INSERT INTO commands_history (`uin`, `command`, `date`, `status`)
+                    "INSERT INTO ".S::bot()->config['db']['table_prefix'].$commandTablename." (`uin`, `command`, `date`, `status`)
                      VALUES ({uin}, {command}, {date}, {status})",
                      array(
                          'uin' => $this->msgEvent->sender,
