@@ -145,7 +145,6 @@ class Proto extends SBotProtocol  {
 
 	public function Msg($txt, $to) {
 		if ( $this->TimeToSend() ) {
-			$this->_icq->sendMessage($to, $txt);
 			if (mb_strlen($txt) <= self::MAX_MESSAGE_LENGTH) {
 				$txt = mb_convert_encoding($txt, 'UNICODE', 'utf-8');
 				$this->_icq->sendMessage($to, $txt);
