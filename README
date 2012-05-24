@@ -1,4 +1,4 @@
-This is fork of Steelbot 3 project (http://steelbot.ru) by vanchester (http://vanchester.ru).
+This is the fork of Steelbot 3 project (http://steelbot.net) by vanchester (http://vanchester.ru).
 
 Fork was created because original project died.
 
@@ -10,16 +10,15 @@ NEW FEATURES of fork are:
 2. Auto-numerical aliases for each commands
 3. More than 20 new plugins
 4. Each plugins sorted by categories in help info
-5. Autosave timers in base and autoload when bot started
 
 
 
 HOW TO INSTALL
 
 run command
-php /steelbot3/install/install.php create /home/steelbot/app
+php ./steelbot3/install/install.php create /home/steelbot/app
 
-and answer to the questions of master.
+and answer to questions of the master.
 
 After that go to /home/steelbot/app and run 
 php run.php
